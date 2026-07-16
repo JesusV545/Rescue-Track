@@ -26,6 +26,22 @@ public class Driver {
         "Tamarin"
     };
 
+    private static final String[] GENDERS = {
+    "male",
+    "female"
+    };
+
+    private static final String[] TRAINING_STATUSES = {
+        "intake",
+        "Phase I",
+        "Phase II",
+        "Phase III",
+        "Phase IV",
+        "Phase V",
+        "in service",
+        "farm"
+    };
+
     /**
      * Starts the Rescue-Track application.
      */
@@ -112,8 +128,10 @@ public class Driver {
         String breed = InputValidator.readRequiredText(
                 scanner, "Breed: ");
 
-        String gender = InputValidator.readRequiredText(
-                scanner, "Gender: ");
+        String gender = InputValidator.readOption(
+                scanner,
+                "Gender: ",
+                GENDERS);
 
         int age = InputValidator.readNonNegativeInt(
                 scanner, "Age: ");
@@ -129,8 +147,10 @@ public class Driver {
                         scanner, "Acquisition country: ");
 
         String trainingStatus =
-                InputValidator.readRequiredText(
-                        scanner, "Training status: ");
+                InputValidator.readOption(
+                        scanner,
+                        "Training status: ",
+                        TRAINING_STATUSES);
 
         String inServiceCountry =
                 InputValidator.readRequiredText(
@@ -172,9 +192,10 @@ public class Driver {
                 scanner,
                 "Species: ",
                 MONKEY_SPECIES);
-
-        String gender = InputValidator.readRequiredText(
-                scanner, "Gender: ");
+        String gender = InputValidator.readOption(
+                scanner,
+                "Gender: ",
+                GENDERS);
 
         int age = InputValidator.readNonNegativeInt(
                 scanner, "Age: ");
@@ -190,8 +211,10 @@ public class Driver {
                         scanner, "Acquisition country: ");
 
         String trainingStatus =
-                InputValidator.readRequiredText(
-                        scanner, "Training status: ");
+                InputValidator.readOption(
+                        scanner,
+                        "Training status: ",
+                        TRAINING_STATUSES);
 
         String inServiceCountry =
                 InputValidator.readRequiredText(
