@@ -1,109 +1,101 @@
-# Rescue-Track 
+# Rescue-Track
 
-## Overview  
-The **Rescue** is a **Java-based inventory management application** designed to track rescued animals, including **dogs and monkeys**. This system allows users to **add, update, and reserve animals**, ensuring efficient record-keeping and easy retrieval. It utilizes **object-oriented programming (OOP) principles** to maintain a modular and scalable design.  
+## Project Overview
 
-## Features  
-- **Animal Intake & Management:** Add new **dogs and monkeys** with detailed attributes.  
-- **Reservation System:** Reserve available animals for adoption or service.  
-- **Data Validation:** Ensures correct species, training status, and location entries.  
-- **OOP Principles:** Implements **inheritance, encapsulation, and polymorphism** for maintainability.  
-- **Menu-Driven Interface:** Provides an interactive **CLI-based system** for user interaction.  
+Rescue-Track is a Java-based console application for managing dogs and monkeys that are being trained for rescue service. The application allows users to intake animals, reserve an available animal, and display animal records.
 
-## Files and Their Purpose  
+The original version was completed on March 16, 2025. This enhanced version was developed for the CS 499 Software Design and Engineering milestone.
 
-### `Driver.java`  
-- Serves as the **entry point** of the program.  
-- Manages **user interaction** through a **menu-driven interface**.  
-- Handles **animal intake, reservations, and data retrieval**.  
+## Application Features
 
-### `RescueAnimal.java`  
-- Defines the **base class** for all rescued animals.  
-- Stores attributes such as **name, age, weight, training status, and location**.  
-- Provides **getter and setter methods** for data access.  
+- Intake new dogs and monkeys
+- Prevent duplicate animal names
+- Validate monkey species
+- Validate gender and training status
+- Validate ages, weights, physical measurements, and dates
+- Reserve available in-service animals
+- Display dogs, monkeys, or all available animals
+- Recover safely from incorrect console input
 
-### `Dog.java`  
-- Extends `RescueAnimal` to create a **dog-specific subclass**.  
-- Includes an additional attribute: `breed`.  
-- Implements methods for setting and retrieving breed information.  
+## Enhanced Architecture
 
-### `Monkey.java`  
-- Extends `RescueAnimal` to manage **monkey-specific attributes**.  
-- Introduces **tail length, body length, height, and species** attributes.  
-- Ensures species validation with a predefined set of monkey types.  
+### `Driver.java`
 
-## Concepts Used  
+Provides the console interface and controls menu navigation. It delegates validation and animal-management responsibilities to separate classes.
 
-### **Fundamental Concepts**  
-1. **Variables & Data Types:**  
-   - `String` for names, species, and status attributes.  
-   - `double` for physical measurements (e.g., tail length, height).  
-   - `boolean` for tracking reservations.  
+### `AnimalService.java`
 
-2. **Input/Output Handling:**  
-   - `Scanner` for reading user input.  
-   - `System.out.println` for displaying information.  
+Manages the dog and monkey collections. It also handles duplicate detection, availability checks, and reservation rules.
 
-3. **Conditional Statements & Loops:**  
-   - `if` statements for **input validation** and **error handling**.  
-   - `while` and `do-while` loops for **continuous user interaction**.  
+### `InputValidator.java`
 
-4. **Methods & Encapsulation:**  
-   - Uses **getter and setter methods** for controlled data access.  
-   - Encapsulates behavior within **individual class files**.  
+Provides reusable validation methods for required text, integers, decimal numbers, dates, and controlled options.
 
-### **Intermediate Concepts**  
-5. **Object-Oriented Programming (OOP):**  
-   - **Encapsulation:** Keeps data private and exposes only necessary methods.  
-   - **Inheritance:** `Dog` and `Monkey` classes inherit from `RescueAnimal`.  
-   - **Polymorphism:** Common methods work across different animal types.  
+### `RescueAnimal.java`
 
-6. **Data Structures:**  
-   - Utilizes **ArrayLists** to store and manage animal records dynamically.  
+Defines the shared fields and behavior for rescue animals. Its constructor validates shared information and prevents invalid model states.
 
-### **Advanced Concepts**  
-7. **Data Validation & Exception Handling:**  
-   - Ensures valid input for species and numerical values.  
-   - Prevents duplicate entries for animals.  
+### `Dog.java`
 
-8. **Code Maintainability & Scalability:**  
-   - Modular design allows **easy expansion** for new animal types.  
-   - Well-structured **method definitions** improve **code readability**.  
+Extends `RescueAnimal` and adds breed information.
 
-## Reflection  
+### `Monkey.java`
 
-### **Project Summary**  
-This project provides an organized system for **tracking rescued animals**, making it easier to manage **animal records, reservations, and availability**. By applying **OOP principles**, the system is **modular, extendable, and easy to maintain**.  
+Extends `RescueAnimal` and adds species and physical measurement information.
 
-### **Strengths in Implementation**  
-- **Strong data validation** ensures reliable user input.  
-- **Encapsulated class structure** improves reusability and maintainability.  
-- **User-friendly CLI design** simplifies interaction.  
+## Software Design Improvements
 
-### **Areas for Improvement**  
-- **Database Integration:** Storing data in a database instead of in-memory lists.  
-- **Graphical Interface:** Adding a GUI for enhanced usability.  
-- **Logging System:** Implementing logs for tracking reservations and updates.  
+The enhanced version includes the following improvements:
 
-### **Challenges Faced & Solutions**  
-- **Handling invalid input entries** was a challenge, but implementing structured validation methods helped resolve it.  
-- **Ensuring scalability** for future animal types required an **extendable class hierarchy**.  
+- Separation of user-interface and business-logic responsibilities
+- Reusable input-validation methods
+- Appropriate data types for ages, weights, measurements, and dates
+- Constructor-level model validation
+- Defensive exception handling
+- Read-only access to stored collections
+- Reduced duplicate logic
+- Improved naming, comments, and documentation
 
-### **Transferable Skills**  
-- Experience in **OOP design and implementation**.  
-- Understanding of **data structures for dynamic storage**.  
-- Knowledge of **input validation and error handling**.  
+These changes make the application more maintainable, reliable, secure, and easier to extend.
 
-## How to Compile and Run  
-Ensure you have Java installed. Then, follow these steps:  
+## Requirements
 
-1. **Clone the Repository:**  
-   ```bash
-   git clone https://github.com/yourusername/Rescue-Track.git
-   cd RescueTrack
+- Java 8 or newer
+- A terminal, command prompt, or Java-compatible IDE
 
-   javac *.java
+## Compile and Run
 
-   java Driver
+From the project directory, run:
 
+```bash
+javac *.java
+java Driver
+```
 
+## Menu Options
+
+```text
+[1] Intake a new dog
+[2] Intake a new monkey
+[3] Reserve an animal
+[4] Display all dogs
+[5] Display all monkeys
+[6] Display available in-service animals
+[q] Quit
+```
+
+## Input Requirements
+
+- Dates must use the `YYYY-MM-DD` format.
+- Ages must be whole numbers that are zero or greater.
+- Weights and measurements must be greater than zero.
+- Monkey species must be one of the supported species shown by the application.
+- Gender and training status must match one of the displayed options.
+
+## Course Outcome Alignment
+
+This enhancement supports the following CS 499 outcomes:
+
+- **Outcome Two:** Professional-quality technical communication through organized code, comments, and documentation.
+- **Outcome Four:** Application of software engineering techniques and tools to create a maintainable solution.
+- **Outcome Five:** Defensive programming, input validation, and prevention of invalid application states.
