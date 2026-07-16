@@ -90,4 +90,30 @@ public final class InputValidator {
             }
         }
     }
+
+    /**
+     * Reads a value that must match one of the provided options.
+     *
+     * The comparison is case-insensitive, but the method returns
+     * the correctly formatted option from the provided array.
+     */
+    public static String readOption(
+            Scanner scanner,
+            String prompt,
+            String[] validOptions) {
+
+        while (true) {
+            String value = readRequiredText(scanner, prompt);
+
+            for (String option : validOptions) {
+                if (option.equalsIgnoreCase(value)) {
+                    return option;
+                }
+            }
+
+            System.out.println(
+                    "Invalid selection. Valid options are: "
+                            + String.join(", ", validOptions));
+        }
+    }
 }
