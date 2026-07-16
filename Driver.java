@@ -156,22 +156,29 @@ public class Driver {
                 InputValidator.readRequiredText(
                         scanner, "In-service country: ");
 
-        Dog newDog = new Dog(
-                name,
-                breed,
-                gender,
-                age,
-                weight,
-                acquisitionDate,
-                acquisitionCountry,
-                trainingStatus,
-                false,
-                inServiceCountry);
+        try {
+            Dog newDog = new Dog(
+                    name,
+                    breed,
+                    gender,
+                    age,
+                    weight,
+                    acquisitionDate,
+                    acquisitionCountry,
+                    trainingStatus,
+                    false,
+                    inServiceCountry);
 
-        if (ANIMAL_SERVICE.addDog(newDog)) {
-            System.out.println("Dog added successfully.");
-        } else {
-            System.out.println("The dog could not be added.");
+            if (ANIMAL_SERVICE.addDog(newDog)) {
+                System.out.println("Dog added successfully.");
+            } else {
+                System.out.println(
+                        "The dog could not be added.");
+            }
+        } catch (IllegalArgumentException exception) {
+            System.out.println(
+                    "Dog intake failed: "
+                            + exception.getMessage());
         }
     }
 
@@ -229,25 +236,33 @@ public class Driver {
         double bodyLength = InputValidator.readPositiveDouble(
                 scanner, "Body length: ");
 
-        Monkey newMonkey = new Monkey(
-                name,
-                gender,
-                age,
-                weight,
-                acquisitionDate,
-                acquisitionCountry,
-                trainingStatus,
-                false,
-                inServiceCountry,
-                tailLength,
-                height,
-                bodyLength,
-                species);
+        try {
+            Monkey newMonkey = new Monkey(
+                    name,
+                    gender,
+                    age,
+                    weight,
+                    acquisitionDate,
+                    acquisitionCountry,
+                    trainingStatus,
+                    false,
+                    inServiceCountry,
+                    tailLength,
+                    height,
+                    bodyLength,
+                    species);
 
-        if (ANIMAL_SERVICE.addMonkey(newMonkey)) {
-            System.out.println("Monkey added successfully.");
-        } else {
-            System.out.println("The monkey could not be added.");
+            if (ANIMAL_SERVICE.addMonkey(newMonkey)) {
+                System.out.println(
+                        "Monkey added successfully.");
+            } else {
+                System.out.println(
+                        "The monkey could not be added.");
+            }
+        } catch (IllegalArgumentException exception) {
+            System.out.println(
+                    "Monkey intake failed: "
+                            + exception.getMessage());
         }
     }
 
