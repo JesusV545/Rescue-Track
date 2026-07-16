@@ -1,248 +1,344 @@
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Provides the console interface for the Rescue-Track application.
+ *
+ * Animal storage and business rules are handled by AnimalService,
+ * while InputValidator handles user-input validation.
+ */
 public class Driver {
-    private static ArrayList<Dog> dogList = new ArrayList<Dog>();
-    private static ArrayList<Monkey> monkeyList = new ArrayList<>(); //initializing the new monkey array list
-    // Instance variables (if needed)
 
+    private static final AnimalService ANIMAL_SERVICE =
+            new AnimalService();
+
+    private static final String[] ANIMAL_TYPES = {
+        "dog", "monkey"
+    };
+
+    private static final String[] MONKEY_SPECIES = {
+        "Capuchin",
+        "Guenon",
+        "Macaque",
+        "Marmoset",
+        "Squirrel monkey",
+        "Tamarin"
+    };
+
+    /**
+     * Starts the Rescue-Track application.
+     */
     public static void main(String[] args) {
-    	
-        initializeDogList();
-        initializeMonkeyList();
-        
-        Scanner scnr = new Scanner(System.in);
-        String choice;
-        
-        //menu loop for user interaction
-        do {
-        	displayMenu(); //displays menu
-        	choice = scnr.nextLine();
-        	
-            // Handle user input using if-else statements
-            if (choice.equals("1")) {
-                intakeNewDog(scnr); // Option to in take a new dog
-            } else if (choice.equals("2")) {
-                intakeNewMonkey(scnr); // Option to in take a new monkey
-            } else if (choice.equals("3")) {
-                reserveAnimal(scnr); // Option to reserve an animal
-            } else if (choice.equals("4")) {
-                printAnimals("dog"); // Print a list of all dogs
-            } else if (choice.equals("5")) {
-                printAnimals("monkey"); // Print a list of all monkeys
-            } else if (choice.equals("6")) {
-                printAnimals("available"); // Print a list of all available animals
-            } else if (choice.equals("q")) {
-                System.out.println("Exiting application."); // Exit the program
-            } else {
-                System.out.println("Invalid input. Please try again."); // Handle invalid input
-            }
-        	
-        } while(!choice.equals("q")); //exits the loop when user inputs 'q'
+        initializeAnimalData();
 
+        try (Scanner scanner = new Scanner(System.in)) {
+            boolean running = true;
+
+            while (running) {
+                displayMenu();
+                String choice = scanner.nextLine().trim().toLowerCase();
+
+                switch (choice) {
+                    case "1":
+                        intakeNewDog(scanner);
+                        break;
+
+                    case "2":
+                        intakeNewMonkey(scanner);
+                        break;
+
+                    case "3":
+                        reserveAnimal(scanner);
+                        break;
+
+                    case "4":
+                        printAnimals(ANIMAL_SERVICE.getDogs());
+                        break;
+
+                    case "5":
+                        printAnimals(ANIMAL_SERVICE.getMonkeys());
+                        break;
+
+                    case "6":
+                        printAnimals(
+                                ANIMAL_SERVICE.getAvailableAnimals());
+                        break;
+
+                    case "q":
+                        running = false;
+                        System.out.println(
+                                "Exiting Rescue-Track.");
+                        break;
+
+                    default:
+                        System.out.println(
+                                "Invalid selection. Enter 1-6 or q.");
+                        break;
+                }
+            }
+        }
     }
 
-    // This method prints the menu options
-    public static void displayMenu() {
-        System.out.println("\n\n");
-        System.out.println("\t\t\t\tRescue Animal System Menu");
+    /**
+     * Displays the main application menu.
+     */
+    private static void displayMenu() {
+        System.out.println("\n=== Rescue-Track Menu ===");
         System.out.println("[1] Intake a new dog");
         System.out.println("[2] Intake a new monkey");
         System.out.println("[3] Reserve an animal");
-        System.out.println("[4] Print a list of all dogs");
-        System.out.println("[5] Print a list of all monkeys");
-        System.out.println("[6] Print a list of all animals that are not reserved");
-        System.out.println("[q] Quit application");
-        System.out.println();
-        System.out.println("Enter a menu selection");
+        System.out.println("[4] Display all dogs");
+        System.out.println("[5] Display all monkeys");
+        System.out.println(
+                "[6] Display available in-service animals");
+        System.out.println("[q] Quit");
+        System.out.print("Selection: ");
     }
 
+    /**
+     * Collects validated information and adds a new dog.
+     */
+    private static void intakeNewDog(Scanner scanner) {
+        String name = InputValidator.readRequiredText(
+                scanner, "Dog name: ");
 
-    // Adds dogs to a list for testing
-    public static void initializeDogList() {
-        Dog dog1 = new Dog("Spot", "German Shepherd", "male", "1", "25.6", "05-12-2019", "United States", "intake", false, "United States");
-        Dog dog2 = new Dog("Rex", "Great Dane", "male", "3", "35.2", "02-03-2020", "United States", "Phase I", false, "United States");
-        Dog dog3 = new Dog("Bella", "Chihuahua", "female", "4", "25.6", "12-12-2019", "Canada", "in service", true, "Canada");
-
-        dogList.add(dog1);
-        dogList.add(dog2);
-        dogList.add(dog3);
-    }
-
-
-    // Adds monkeys to a list for testing
-    public static void initializeMonkeyList() {
-        Monkey monkey1 = new Monkey("Ceaser", "male", "5", "19.5", "02-04-2000", "Africa", "in service", false, "United States", 24.5, 40.0, 60.0, "Guenon");
-        monkeyList.add(monkey1);
-    }
-
-
-    // lets user add dog into the system
-    public static void intakeNewDog(Scanner scanner) {
-        System.out.println("What is the dog's name?");
-        String name = scanner.nextLine();
-        for(Dog dog: dogList) {
-            if(dog.getName().equalsIgnoreCase(name)) {
-                System.out.println("\n\nThis dog is already in our system\n\n");
-                return; //returns to menu
-            }
-        }
-        
-        //obtain more information about dog with appropriate data types
-        System.out.println("Enter dog's breed:");
-        String breed = scanner.nextLine();
-        System.out.println("Enter gender:");
-        String gender = scanner.nextLine();
-        System.out.println("Enter age:");
-        String age = scanner.nextLine();
-        System.out.println("Enter weight:");
-        String weight = scanner.nextLine();
-        System.out.println("Enter acquisition date:");
-        String acquisitionDate = scanner.nextLine();
-        System.out.println("Enter acquisition country:");
-        String acquisitionCountry = scanner.nextLine();
-        System.out.println("Enter training status:");
-        String trainingStatus = scanner.nextLine();
-        
-        // creates new Dog object and then adds it to the list
-        Dog newDog = new Dog(name, breed, gender, age, weight, acquisitionDate, acquisitionCountry, trainingStatus, false, "N/A");
-        dogList.add(newDog);
-        System.out.println("Dog added.");
-    }
-
-    
-    public static void intakeNewMonkey(Scanner scanner) {
-        System.out.println("Enter monkey name:");
-        String name = scanner.nextLine();
-
-        // checking if the monkey already exists in the system
-        for (Monkey monkey : monkeyList) {
-            if (monkey.getName().equalsIgnoreCase(name)) {
-                System.out.println("This monkey is already in our system.");
-                return;
-            }
-        }
-        
-        //need to get monkey species that are valid 
-        System.out.println("Enter species (Capuchin, Guenon, Macaque, Marmoset, Squirrel monkey, Tamarin):");
-        String species = scanner.nextLine();
-        
-        //array of valid species for validation
-        String[] validSpecies = {"Capuchin", "Guenon", "Macaque", "Marmoset", "Squirrel monkey", "Tamarin"};
-        
-        //need to make sure user input for species is valid
-        if (!Arrays.asList(validSpecies).contains(species)) {
-            System.out.println("Invalid species. Intake failed.");
+        if (ANIMAL_SERVICE.containsAnimalName(name)) {
+            System.out.println(
+                    "An animal with that name is already registered.");
             return;
         }
-        
-        //obtain more information about monkey with appropriate data types
-        System.out.println("Enter gender:");
-        String gender = scanner.nextLine();
-        System.out.println("Enter age:");
-        String age = scanner.nextLine();
-        System.out.println("Enter weight:");
-        String weight = scanner.nextLine();
-        System.out.println("Enter acquisition date:");
-        String acquisitionDate = scanner.nextLine();
-        System.out.println("Enter acquisition country:");
-        String acquisitionCountry = scanner.nextLine();
-        System.out.println("Enter tail length:");
-        double tailLength = scanner.nextDouble();
-        System.out.println("Enter height:");
-        double height = scanner.nextDouble();
-        System.out.println("Enter body length:");
-        double bodyLength = scanner.nextDouble();
-        scanner.nextLine(); // consume newline
-        System.out.println("Enter training status:");
-        String trainingStatus = scanner.nextLine();
-        
-        //creates a new Monkey object and adds it to the list
-        Monkey newMonkey = new Monkey(name, gender, age, weight, acquisitionDate, acquisitionCountry, trainingStatus, false, "N/A", tailLength, height, bodyLength, species);
-        monkeyList.add(newMonkey);
-        System.out.println("Monkey added.");
-    }
 
-    // find the animal by animal type and in service country
-    public static void reserveAnimal(Scanner scanner) {
-        System.out.println("Enter animal type (dog/monkey):"); //prompt user to establish what animal they want to reserve
-        String type = scanner.nextLine();
-        System.out.println("Enter in-service country:"); // enter the country where animal is in service
-        String country = scanner.nextLine();
-        
-        if (type.equals("dog")) {
-            // Search for an available dog
-            for (Dog dog : dogList) {
-                if (dog.getInServiceLocation().equalsIgnoreCase(country) && !dog.getReserved()) {
-                    dog.setReserved(true); // marking the dog reserved
-                    System.out.println("Dog reserved.");
-                    return; //exit after reserving
-                }
-            }
-            
-            System.out.println("No available dogs found in " + country + "."); //if no dogs are found
-            
-        } else if (type.equals("monkey")) {
-            // Search for an available monkey
-            for (Monkey monkey : monkeyList) {
-                if (monkey.getInServiceLocation().equalsIgnoreCase(country) && !monkey.getReserved()) {
-                    monkey.setReserved(true); //marking the monkey reserved
-                    System.out.println("Monkey reserved successfully!");
-                    return; //exit after reserving
-                }
-            }
-            
-            System.out.println("No available monkeys found in " + country + "."); // if no monkeys are found
-            
+        String breed = InputValidator.readRequiredText(
+                scanner, "Breed: ");
+
+        String gender = InputValidator.readRequiredText(
+                scanner, "Gender: ");
+
+        int age = InputValidator.readNonNegativeInt(
+                scanner, "Age: ");
+
+        double weight = InputValidator.readPositiveDouble(
+                scanner, "Weight: ");
+
+        LocalDate acquisitionDate = InputValidator.readDate(
+                scanner, "Acquisition date");
+
+        String acquisitionCountry =
+                InputValidator.readRequiredText(
+                        scanner, "Acquisition country: ");
+
+        String trainingStatus =
+                InputValidator.readRequiredText(
+                        scanner, "Training status: ");
+
+        String inServiceCountry =
+                InputValidator.readRequiredText(
+                        scanner, "In-service country: ");
+
+        Dog newDog = new Dog(
+                name,
+                breed,
+                gender,
+                String.valueOf(age),
+                String.valueOf(weight),
+                acquisitionDate.toString(),
+                acquisitionCountry,
+                trainingStatus,
+                false,
+                inServiceCountry);
+
+        if (ANIMAL_SERVICE.addDog(newDog)) {
+            System.out.println("Dog added successfully.");
         } else {
-            // Invalid animal type
-            System.out.println("Invalid animal type. Please choose 'dog' or 'monkey'.");
-        }
-
-    }
-
-    //prints the animals that are requested
-    public static void printAnimals(String listType) {
-        if (listType.equalsIgnoreCase("dog")) {
-            for (Dog dog : dogList) {
-                System.out.println(dog.getName() + " | " + dog.getTrainingStatus() + " | " +
-                                   dog.getAcquisitionLocation() + " | Reserved: " + dog.getReserved());
-            }
-        } else if (listType.equalsIgnoreCase("monkey")) {
-            for (Monkey monkey : monkeyList) {
-                System.out.println(monkey.getName() + " | " + monkey.getTrainingStatus() + " | " +
-                                   monkey.getAcquisitionLocation() + " | Reserved: " + monkey.getReserved());
-            }
-        } else if (listType.equalsIgnoreCase("available")) {
-            boolean foundAvailable = false; // tracks if any available animals are printed
-
-            // check dogs
-            for (Dog dog : dogList) {
-                if (dog.getTrainingStatus().equalsIgnoreCase("in service") && !dog.getReserved()) {
-                    System.out.println("Dog: " + dog.getName() + " | Location: " + dog.getAcquisitionLocation());
-                    foundAvailable = true;
-                }
-            }
-
-            // check monkeys
-            for (Monkey monkey : monkeyList) {
-                if (monkey.getTrainingStatus().equalsIgnoreCase("in service") && !monkey.getReserved()) {
-                    System.out.println("Monkey: " + monkey.getName() + " | Location: " + monkey.getAcquisitionLocation() +
-                                       " | Species: " + monkey.getSpecies());
-                    foundAvailable = true;
-                }
-            }
-
-            if (!foundAvailable) {
-                System.out.println("No available animals found.");
-            }
-        } else {
-            System.out.println("Invalid list type.");
+            System.out.println("The dog could not be added.");
         }
     }
 
+    /**
+     * Collects validated information and adds a new monkey.
+     */
+    private static void intakeNewMonkey(Scanner scanner) {
+        String name = InputValidator.readRequiredText(
+                scanner, "Monkey name: ");
 
+        if (ANIMAL_SERVICE.containsAnimalName(name)) {
+            System.out.println(
+                    "An animal with that name is already registered.");
+            return;
+        }
 
+        String species = InputValidator.readOption(
+                scanner,
+                "Species: ",
+                MONKEY_SPECIES);
+
+        String gender = InputValidator.readRequiredText(
+                scanner, "Gender: ");
+
+        int age = InputValidator.readNonNegativeInt(
+                scanner, "Age: ");
+
+        double weight = InputValidator.readPositiveDouble(
+                scanner, "Weight: ");
+
+        LocalDate acquisitionDate = InputValidator.readDate(
+                scanner, "Acquisition date");
+
+        String acquisitionCountry =
+                InputValidator.readRequiredText(
+                        scanner, "Acquisition country: ");
+
+        String trainingStatus =
+                InputValidator.readRequiredText(
+                        scanner, "Training status: ");
+
+        String inServiceCountry =
+                InputValidator.readRequiredText(
+                        scanner, "In-service country: ");
+
+        double tailLength = InputValidator.readPositiveDouble(
+                scanner, "Tail length: ");
+
+        double height = InputValidator.readPositiveDouble(
+                scanner, "Height: ");
+
+        double bodyLength = InputValidator.readPositiveDouble(
+                scanner, "Body length: ");
+
+        Monkey newMonkey = new Monkey(
+                name,
+                gender,
+                String.valueOf(age),
+                String.valueOf(weight),
+                acquisitionDate.toString(),
+                acquisitionCountry,
+                trainingStatus,
+                false,
+                inServiceCountry,
+                tailLength,
+                height,
+                bodyLength,
+                species);
+
+        if (ANIMAL_SERVICE.addMonkey(newMonkey)) {
+            System.out.println("Monkey added successfully.");
+        } else {
+            System.out.println("The monkey could not be added.");
+        }
+    }
+
+    /**
+     * Reserves the first matching available animal.
+     */
+    private static void reserveAnimal(Scanner scanner) {
+        String animalType = InputValidator.readOption(
+                scanner,
+                "Animal type (dog/monkey): ",
+                ANIMAL_TYPES);
+
+        String country = InputValidator.readRequiredText(
+                scanner, "In-service country: ");
+
+        boolean reserved =
+                ANIMAL_SERVICE.reserveFirstAvailable(
+                        animalType, country);
+
+        if (reserved) {
+            System.out.println(
+                    "Animal reserved successfully.");
+        } else {
+            System.out.println(
+                    "No matching in-service animal is available.");
+        }
+    }
+
+    /**
+     * Displays a collection of animals in a consistent format.
+     */
+    private static void printAnimals(
+            List<? extends RescueAnimal> animals) {
+
+        if (animals.isEmpty()) {
+            System.out.println("No matching animals found.");
+            return;
+        }
+
+        System.out.println(
+                "\nType | Name | Training Status"
+                        + " | Service Country | Reserved");
+
+        for (RescueAnimal animal : animals) {
+            String animalType =
+                    animal instanceof Dog ? "Dog" : "Monkey";
+
+            System.out.println(
+                    animalType
+                            + " | " + animal.getName()
+                            + " | " + animal.getTrainingStatus()
+                            + " | "
+                            + animal.getInServiceLocation()
+                            + " | " + animal.getReserved());
+        }
+    }
+
+    /**
+     * Adds sample records for application testing.
+     */
+    private static void initializeAnimalData() {
+        ANIMAL_SERVICE.addDog(
+                new Dog(
+                        "Spot",
+                        "German Shepherd",
+                        "male",
+                        "1",
+                        "25.6",
+                        "2019-05-12",
+                        "United States",
+                        "intake",
+                        false,
+                        "United States"));
+
+        ANIMAL_SERVICE.addDog(
+                new Dog(
+                        "Rex",
+                        "Great Dane",
+                        "male",
+                        "3",
+                        "35.2",
+                        "2020-02-03",
+                        "United States",
+                        "Phase I",
+                        false,
+                        "United States"));
+
+        ANIMAL_SERVICE.addDog(
+                new Dog(
+                        "Bella",
+                        "Chihuahua",
+                        "female",
+                        "4",
+                        "25.6",
+                        "2019-12-12",
+                        "Canada",
+                        "in service",
+                        true,
+                        "Canada"));
+
+        ANIMAL_SERVICE.addMonkey(
+                new Monkey(
+                        "Caesar",
+                        "male",
+                        "5",
+                        "19.5",
+                        "2020-02-04",
+                        "South Africa",
+                        "in service",
+                        false,
+                        "United States",
+                        24.5,
+                        40.0,
+                        60.0,
+                        "Guenon"));
+    }
 }
-
