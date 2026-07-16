@@ -1,34 +1,44 @@
+import java.time.LocalDate;
 
+/**
+ * Represents a rescue dog and its breed information.
+ */
 public class Dog extends RescueAnimal {
 
-    // Instance variable
-    private String breed;
+    private final String breed;
 
-    // Constructor
-    public Dog(String name, String breed, String gender, String age,
-    String weight, String acquisitionDate, String acquisitionCountry,
-	String trainingStatus, boolean reserved, String inServiceCountry) {
-        setName(name);
-        setBreed(breed);
-        setGender(gender);
-        setAge(age);
-        setWeight(weight);
-        setAcquisitionDate(acquisitionDate);
-        setAcquisitionLocation(acquisitionCountry);
-        setTrainingStatus(trainingStatus);
-        setReserved(reserved);
-        setInServiceCountry(inServiceCountry);
+    public Dog(
+            String name,
+            String breed,
+            String gender,
+            int age,
+            double weight,
+            LocalDate acquisitionDate,
+            String acquisitionCountry,
+            String trainingStatus,
+            boolean reserved,
+            String inServiceCountry) {
 
+        super(
+                name,
+                gender,
+                age,
+                weight,
+                acquisitionDate,
+                acquisitionCountry,
+                trainingStatus,
+                reserved,
+                inServiceCountry);
+
+        this.breed = requireText(breed, "Breed");
     }
 
-    // Accessory Method
+    @Override
+    public String getAnimalType() {
+        return "Dog";
+    }
+
     public String getBreed() {
         return breed;
     }
-
-    // Mutator Method
-    public void setBreed(String dogBreed) {
-        breed = dogBreed;
-    }
-
 }

@@ -140,9 +140,9 @@ public class Driver {
                 name,
                 breed,
                 gender,
-                String.valueOf(age),
-                String.valueOf(weight),
-                acquisitionDate.toString(),
+                age,
+                weight,
+                acquisitionDate,
                 acquisitionCountry,
                 trainingStatus,
                 false,
@@ -209,9 +209,9 @@ public class Driver {
         Monkey newMonkey = new Monkey(
                 name,
                 gender,
-                String.valueOf(age),
-                String.valueOf(weight),
-                acquisitionDate.toString(),
+                age,
+                weight,
+                acquisitionDate,
                 acquisitionCountry,
                 trainingStatus,
                 false,
@@ -269,16 +269,13 @@ public class Driver {
                         + " | Service Country | Reserved");
 
         for (RescueAnimal animal : animals) {
-            String animalType =
-                    animal instanceof Dog ? "Dog" : "Monkey";
-
             System.out.println(
-                    animalType
+                    animal.getAnimalType()
                             + " | " + animal.getName()
                             + " | " + animal.getTrainingStatus()
                             + " | "
-                            + animal.getInServiceLocation()
-                            + " | " + animal.getReserved());
+                            + animal.getInServiceCountry()
+                            + " | " + animal.isReserved());
         }
     }
 
@@ -291,9 +288,9 @@ public class Driver {
                         "Spot",
                         "German Shepherd",
                         "male",
-                        "1",
-                        "25.6",
-                        "2019-05-12",
+                        1,
+                        25.6,
+                        LocalDate.of(2019, 5, 12),
                         "United States",
                         "intake",
                         false,
@@ -304,9 +301,9 @@ public class Driver {
                         "Rex",
                         "Great Dane",
                         "male",
-                        "3",
-                        "35.2",
-                        "2020-02-03",
+                        3,
+                        35.2,
+                        LocalDate.of(2020, 2, 3),
                         "United States",
                         "Phase I",
                         false,
@@ -317,9 +314,9 @@ public class Driver {
                         "Bella",
                         "Chihuahua",
                         "female",
-                        "4",
-                        "25.6",
-                        "2019-12-12",
+                        4,
+                        25.6,
+                        LocalDate.of(2019, 12, 12),
                         "Canada",
                         "in service",
                         true,
@@ -329,9 +326,9 @@ public class Driver {
                 new Monkey(
                         "Caesar",
                         "male",
-                        "5",
-                        "19.5",
-                        "2020-02-04",
+                        5,
+                        19.5,
+                        LocalDate.of(2020, 2, 4),
                         "South Africa",
                         "in service",
                         false,

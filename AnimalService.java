@@ -124,11 +124,11 @@ public class AnimalService {
     private boolean isAvailableInCountry(
             RescueAnimal animal, String country) {
 
-        return animal.getInServiceLocation().equalsIgnoreCase(
+        return animal.getInServiceCountry().equalsIgnoreCase(
                         country.trim())
                 && animal.getTrainingStatus().equalsIgnoreCase(
                         "in service")
-                && !animal.getReserved();
+                && !animal.isReserved();
     }
 
     /**
@@ -169,6 +169,9 @@ public class AnimalService {
     private boolean isAvailableForService(RescueAnimal animal) {
         return animal.getTrainingStatus().equalsIgnoreCase(
                         "in service")
-                && !animal.getReserved();
+                && !animal.isReserved();
     }
+
+
+
 }

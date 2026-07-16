@@ -1,125 +1,136 @@
+import java.time.LocalDate;
+import java.util.Objects;
 
+/**
+ * Defines the shared information and behavior for rescue animals.
+ */
+public abstract class RescueAnimal {
 
-import java.lang.String;
+    private final String name;
+    private final String gender;
+    private final int age;
+    private final double weight;
+    private final LocalDate acquisitionDate;
+    private final String acquisitionCountry;
 
-public class RescueAnimal {
-
-    // Instance variables
-    private String name;
-    private String animalType;
-    private String gender;
-    private String age;
-    private String weight;
-    private String acquisitionDate;
-    private String acquisitionCountry;
-	private String trainingStatus;
+    private String trainingStatus;
     private boolean reserved;
-	private String inServiceCountry;
+    private String inServiceCountry;
 
+    /**
+     * Creates a rescue animal after validating its shared fields.
+     */
+    protected RescueAnimal(
+            String name,
+            String gender,
+            int age,
+            double weight,
+            LocalDate acquisitionDate,
+            String acquisitionCountry,
+            String trainingStatus,
+            boolean reserved,
+            String inServiceCountry) {
 
-    // Constructor
-    public RescueAnimal() {
+        this.name = requireText(name, "Name");
+        this.gender = requireText(gender, "Gender");
+
+        if (age < 0) {
+            throw new IllegalArgumentException(
+                    "Age cannot be negative.");
+        }
+
+        if (!Double.isFinite(weight) || weight <= 0) {
+            throw new IllegalArgumentException(
+                    "Weight must be greater than zero.");
+        }
+
+        this.age = age;
+        this.weight = weight;
+
+        this.acquisitionDate = Objects.requireNonNull(
+                acquisitionDate,
+                "Acquisition date is required.");
+
+        this.acquisitionCountry = requireText(
+                acquisitionCountry,
+                "Acquisition country");
+
+        this.trainingStatus = requireText(
+                trainingStatus,
+                "Training status");
+
+        this.reserved = reserved;
+
+        this.inServiceCountry = requireText(
+                inServiceCountry,
+                "In-service country");
     }
 
+    /**
+     * Validates required text before storing it.
+     */
+    protected static String requireText(
+            String value, String fieldName) {
 
-	public String getName() {
-		return name;
-	}
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    fieldName + " is required.");
+        }
 
+        return value.trim();
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public abstract String getAnimalType();
 
+    public String getName() {
+        return name;
+    }
 
-	public String getAnimalType() {
-		return animalType;
-	}
+    public String getGender() {
+        return gender;
+    }
 
+    public int getAge() {
+        return age;
+    }
 
-	public void setAnimalType(String animalType) {
-		this.animalType = animalType;
-	}
+    public double getWeight() {
+        return weight;
+    }
 
+    public LocalDate getAcquisitionDate() {
+        return acquisitionDate;
+    }
 
-	public String getGender() {
-		return gender;
-	}
+    public String getAcquisitionCountry() {
+        return acquisitionCountry;
+    }
 
+    public String getTrainingStatus() {
+        return trainingStatus;
+    }
 
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
+    public void setTrainingStatus(String trainingStatus) {
+        this.trainingStatus = requireText(
+                trainingStatus,
+                "Training status");
+    }
 
+    public boolean isReserved() {
+        return reserved;
+    }
 
-	public String getAge() {
-		return age;
-	}
+    public void setReserved(boolean reserved) {
+        this.reserved = reserved;
+    }
 
+    public String getInServiceCountry() {
+        return inServiceCountry;
+    }
 
-	public void setAge(String age) {
-		this.age = age;
-	}
-
-
-	public String getWeight() {
-		return weight;
-	}
-
-
-	public void setWeight(String weight) {
-		this.weight = weight;
-	}
-
-
-	public String getAcquisitionDate() {
-		return acquisitionDate;
-	}
-
-
-	public void setAcquisitionDate(String acquisitionDate) {
-		this.acquisitionDate = acquisitionDate;
-	}
-
-
-	public String getAcquisitionLocation() {
-		return acquisitionCountry;
-	}
-
-
-	public void setAcquisitionLocation(String acquisitionCountry) {
-		this.acquisitionCountry = acquisitionCountry;
-	}
-
-
-	public boolean getReserved() {
-		return reserved;
-	}
-
-
-	public void setReserved(boolean reserved) {
-		this.reserved = reserved;
-	}
-
-
-	public String getInServiceLocation() {
-		return inServiceCountry;
-	}
-
-
-	public void setInServiceCountry(String inServiceCountry) {
-		this.inServiceCountry = inServiceCountry;
-	}
-
-
-
-
-	public String getTrainingStatus() {
-		return trainingStatus;
-	}
-
-
-	public void setTrainingStatus(String trainingStatus) {
-		this.trainingStatus = trainingStatus;
-	}
+    public void setInServiceCountry(String inServiceCountry) {
+        this.inServiceCountry = requireText(
+                inServiceCountry,
+                "In-service country");
+    }
 }
