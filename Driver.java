@@ -14,7 +14,14 @@ public class Driver {
             new AnimalService();
 
     private static final String[] ANIMAL_TYPES = {
-        "dog", "monkey"
+        "dog",
+        "monkey"
+    };
+
+    private static final String[] SEARCH_ANIMAL_TYPES = {
+        "all",
+        "dog",
+        "monkey"
     };
 
     private static final String[] MONKEY_SPECIES = {
@@ -27,8 +34,8 @@ public class Driver {
     };
 
     private static final String[] GENDERS = {
-    "male",
-    "female"
+        "male",
+        "female"
     };
 
     private static final String[] TRAINING_STATUSES = {
@@ -42,6 +49,24 @@ public class Driver {
         "farm"
     };
 
+    private static final String[] SEARCH_TRAINING_STATUSES = {
+        "all",
+        "intake",
+        "Phase I",
+        "Phase II",
+        "Phase III",
+        "Phase IV",
+        "Phase V",
+        "in service",
+        "farm"
+    };
+
+    private static final String[] SORT_OPTIONS = {
+        "name",
+        "age",
+        "date"
+    };
+
     /**
      * Starts the Rescue-Track application.
      */
@@ -53,7 +78,8 @@ public class Driver {
 
             while (running) {
                 displayMenu();
-                String choice = scanner.nextLine().trim().toLowerCase();
+                String choice =
+                        scanner.nextLine().trim().toLowerCase();
 
                 switch (choice) {
                     case "1":
@@ -81,15 +107,22 @@ public class Driver {
                                 ANIMAL_SERVICE.getAvailableAnimals());
                         break;
 
+                    case "7":
+                        findAnimalByName(scanner);
+                        break;
+
+                    case "8":
+                        searchAndSortAnimals(scanner);
+                        break;
+
                     case "q":
                         running = false;
-                        System.out.println(
-                                "Exiting Rescue-Track.");
+                        System.out.println("Exiting Rescue-Track.");
                         break;
 
                     default:
                         System.out.println(
-                                "Invalid selection. Enter 1-6 or q.");
+                                "Invalid selection. Enter 1-8 or q.");
                         break;
                 }
             }
@@ -108,6 +141,8 @@ public class Driver {
         System.out.println("[5] Display all monkeys");
         System.out.println(
                 "[6] Display available in-service animals");
+        System.out.println("[7] Find an animal by name");
+        System.out.println("[8] Search and sort animals");
         System.out.println("[q] Quit");
         System.out.print("Selection: ");
     }
@@ -199,6 +234,7 @@ public class Driver {
                 scanner,
                 "Species: ",
                 MONKEY_SPECIES);
+
         String gender = InputValidator.readOption(
                 scanner,
                 "Gender: ",
@@ -227,14 +263,16 @@ public class Driver {
                 InputValidator.readRequiredText(
                         scanner, "In-service country: ");
 
-        double tailLength = InputValidator.readPositiveDouble(
-                scanner, "Tail length: ");
+        double tailLength =
+                InputValidator.readPositiveDouble(
+                        scanner, "Tail length: ");
 
         double height = InputValidator.readPositiveDouble(
                 scanner, "Height: ");
 
-        double bodyLength = InputValidator.readPositiveDouble(
-                scanner, "Body length: ");
+        double bodyLength =
+                InputValidator.readPositiveDouble(
+                        scanner, "Body length: ");
 
         try {
             Monkey newMonkey = new Monkey(
@@ -292,6 +330,60 @@ public class Driver {
     }
 
     /**
+     * Finds and displays an animal using the HashMap name index.
+     */
+    private static void findAnimalByName(Scanner scanner) {
+        String name = InputValidator.readRequiredText(
+                scanner, "Animal name: ");
+
+        RescueAnimal animal =
+                ANIMAL_SERVICE.findAnimalByName(name);
+
+        if (animal == null) {
+            System.out.println(
+                    "No animal was found with that name.");
+            return;
+        }
+
+        printAnimalHeader();
+        printAnimal(animal);
+    }
+
+    /**
+     * Collects filtering and sorting choices and displays the results.
+     */
+    private static void searchAndSortAnimals(Scanner scanner) {
+        String animalType = InputValidator.readOption(
+                scanner,
+                "Animal type (all/dog/monkey): ",
+                SEARCH_ANIMAL_TYPES);
+
+        String trainingStatus = InputValidator.readOption(
+                scanner,
+                "Training status: ",
+                SEARCH_TRAINING_STATUSES);
+
+        String serviceCountry =
+                InputValidator.readRequiredText(
+                        scanner,
+                        "Service country (or all): ");
+
+        String sortBy = InputValidator.readOption(
+                scanner,
+                "Sort by (name/age/date): ",
+                SORT_OPTIONS);
+
+        List<RescueAnimal> results =
+                ANIMAL_SERVICE.searchAnimals(
+                        animalType,
+                        trainingStatus,
+                        serviceCountry,
+                        sortBy);
+
+        printAnimals(results);
+    }
+
+    /**
      * Displays a collection of animals in a consistent format.
      */
     private static void printAnimals(
@@ -302,19 +394,35 @@ public class Driver {
             return;
         }
 
-        System.out.println(
-                "\nType | Name | Training Status"
-                        + " | Service Country | Reserved");
+        printAnimalHeader();
 
         for (RescueAnimal animal : animals) {
-            System.out.println(
-                    animal.getAnimalType()
-                            + " | " + animal.getName()
-                            + " | " + animal.getTrainingStatus()
-                            + " | "
-                            + animal.getInServiceCountry()
-                            + " | " + animal.isReserved());
+            printAnimal(animal);
         }
+    }
+
+    /**
+     * Displays the heading used for animal records.
+     */
+    private static void printAnimalHeader() {
+        System.out.println(
+                "\nType | Name | Age | Acquisition Date"
+                        + " | Training Status"
+                        + " | Service Country | Reserved");
+    }
+
+    /**
+     * Displays one animal record.
+     */
+    private static void printAnimal(RescueAnimal animal) {
+        System.out.println(
+                animal.getAnimalType()
+                        + " | " + animal.getName()
+                        + " | " + animal.getAge()
+                        + " | " + animal.getAcquisitionDate()
+                        + " | " + animal.getTrainingStatus()
+                        + " | " + animal.getInServiceCountry()
+                        + " | " + animal.isReserved());
     }
 
     /**

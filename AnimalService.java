@@ -1,17 +1,22 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
- * Manages animal records and related business rules.
- *
- * Separating these responsibilities from Driver allows Driver
- * to focus on user interaction and menu navigation.
+ * Manages animal records, searches, and business rules.
  */
 public class AnimalService {
 
+    // Lists preserve the order in which animals were added.
     private final List<Dog> dogList;
     private final List<Monkey> monkeyList;
+
+    // Provides fast animal lookup using a normalized name.
+    private final Map<String, RescueAnimal> animalsByName;
 
     /**
      * Creates an animal service with empty collections.
@@ -19,69 +24,202 @@ public class AnimalService {
     public AnimalService() {
         dogList = new ArrayList<>();
         monkeyList = new ArrayList<>();
+        animalsByName = new HashMap<>();
     }
 
     /**
-     * Adds a dog if its name is not already registered.
+     * Adds a dog when its name is valid and not already registered.
      *
      * @return true if the dog was added; otherwise, false
      */
     public boolean addDog(Dog dog) {
-        if (dog == null || containsAnimalName(dog.getName())) {
+        if (dog == null
+                || !isValidName(dog.getName())
+                || containsAnimalName(dog.getName())) {
             return false;
         }
 
         dogList.add(dog);
+        animalsByName.put(normalizeName(dog.getName()), dog);
         return true;
     }
 
     /**
-     * Adds a monkey if its name is not already registered.
+     * Adds a monkey when its name is valid and not already registered.
      *
      * @return true if the monkey was added; otherwise, false
      */
     public boolean addMonkey(Monkey monkey) {
-        if (monkey == null || containsAnimalName(monkey.getName())) {
+        if (monkey == null
+                || !isValidName(monkey.getName())
+                || containsAnimalName(monkey.getName())) {
             return false;
         }
 
         monkeyList.add(monkey);
+        animalsByName.put(normalizeName(monkey.getName()), monkey);
         return true;
     }
 
     /**
-     * Checks both collections for a duplicate animal name.
+     * Checks the HashMap for a registered animal name.
+     *
+     * Average lookup time is O(1).
      */
     public boolean containsAnimalName(String name) {
-        if (name == null || name.trim().isEmpty()) {
+        if (!isValidName(name)) {
             return false;
         }
 
-        for (Dog dog : dogList) {
-            if (dog.getName().equalsIgnoreCase(name.trim())) {
-                return true;
-            }
-        }
-
-        for (Monkey monkey : monkeyList) {
-            if (monkey.getName().equalsIgnoreCase(name.trim())) {
-                return true;
-            }
-        }
-
-        return false;
+        return animalsByName.containsKey(normalizeName(name));
     }
 
     /**
-     * Reserves the first matching animal that is in service
-     * and currently available.
+     * Finds an animal by name using the HashMap index.
+     *
+     * @return the matching animal or null if no match exists
+     */
+    public RescueAnimal findAnimalByName(String name) {
+        if (!isValidName(name)) {
+            return null;
+        }
+
+        return animalsByName.get(normalizeName(name));
+    }
+
+    /**
+     * Filters and sorts animal records.
+     *
+     * Entering "all" for a filter includes every value in that category.
+     * Valid sort options are name, age, and date.
+     *
+     * @return a new list containing the matching animals
+     */
+    public List<RescueAnimal> searchAnimals(
+            String animalType,
+            String trainingStatus,
+            String serviceCountry,
+            String sortBy) {
+
+        List<RescueAnimal> results = new ArrayList<>();
+
+        // Search both animal collections.
+        addMatchingAnimals(
+                results,
+                dogList,
+                animalType,
+                trainingStatus,
+                serviceCountry);
+
+        addMatchingAnimals(
+                results,
+                monkeyList,
+                animalType,
+                trainingStatus,
+                serviceCountry);
+
+        // Sort the copied result list without changing stored list order.
+        sortAnimals(results, sortBy);
+
+        return results;
+    }
+
+    /**
+     * Adds matching animals from one collection to the result list.
+     */
+    private void addMatchingAnimals(
+            List<RescueAnimal> results,
+            List<? extends RescueAnimal> animals,
+            String animalType,
+            String trainingStatus,
+            String serviceCountry) {
+
+        for (RescueAnimal animal : animals) {
+            if (matchesFilter(
+                    animal,
+                    animalType,
+                    trainingStatus,
+                    serviceCountry)) {
+
+                results.add(animal);
+            }
+        }
+    }
+
+    /**
+     * Checks whether an animal matches all selected filters.
+     */
+    private boolean matchesFilter(
+            RescueAnimal animal,
+            String animalType,
+            String trainingStatus,
+            String serviceCountry) {
+
+        boolean matchesType =
+                isAllOption(animalType)
+                        || animal.getAnimalType().equalsIgnoreCase(
+                                animalType.trim());
+
+        boolean matchesStatus =
+                isAllOption(trainingStatus)
+                        || animal.getTrainingStatus().equalsIgnoreCase(
+                                trainingStatus.trim());
+
+        boolean matchesCountry =
+                isAllOption(serviceCountry)
+                        || animal.getInServiceCountry().equalsIgnoreCase(
+                                serviceCountry.trim());
+
+        return matchesType && matchesStatus && matchesCountry;
+    }
+
+    /**
+     * Sorts animals using the selected field.
+     */
+    private void sortAnimals(
+            List<RescueAnimal> animals, String sortBy) {
+
+        if (sortBy == null) {
+            return;
+        }
+
+        switch (sortBy.trim().toLowerCase(Locale.ROOT)) {
+            case "name":
+                animals.sort(
+                        Comparator.comparing(
+                                RescueAnimal::getName,
+                                String.CASE_INSENSITIVE_ORDER));
+                break;
+
+            case "age":
+                animals.sort(
+                        Comparator.comparingInt(
+                                RescueAnimal::getAge));
+                break;
+
+            case "date":
+                animals.sort(
+                        Comparator.comparing(
+                                RescueAnimal::getAcquisitionDate));
+                break;
+
+            default:
+                // Keep the original insertion order for invalid options.
+                break;
+        }
+    }
+
+    /**
+     * Reserves the first matching animal that is in service and available.
      *
      * @return true if an animal was reserved; otherwise, false
      */
     public boolean reserveFirstAvailable(
             String animalType, String country) {
 
-        if (animalType == null || country == null) {
+        if (animalType == null
+                || country == null
+                || country.trim().isEmpty()) {
             return false;
         }
 
@@ -96,6 +234,9 @@ public class AnimalService {
         return false;
     }
 
+    /**
+     * Searches for and reserves the first available dog.
+     */
     private boolean reserveDog(String country) {
         for (Dog dog : dogList) {
             if (isAvailableInCountry(dog, country)) {
@@ -107,6 +248,9 @@ public class AnimalService {
         return false;
     }
 
+    /**
+     * Searches for and reserves the first available monkey.
+     */
     private boolean reserveMonkey(String country) {
         for (Monkey monkey : monkeyList) {
             if (isAvailableInCountry(monkey, country)) {
@@ -119,7 +263,7 @@ public class AnimalService {
     }
 
     /**
-     * Applies the shared reservation requirements to any animal.
+     * Applies the shared reservation requirements.
      */
     private boolean isAvailableInCountry(
             RescueAnimal animal, String country) {
@@ -146,7 +290,7 @@ public class AnimalService {
     }
 
     /**
-     * Returns all unreserved animals that have completed training.
+     * Returns all trained and unreserved animals.
      */
     public List<RescueAnimal> getAvailableAnimals() {
         List<RescueAnimal> availableAnimals = new ArrayList<>();
@@ -166,12 +310,35 @@ public class AnimalService {
         return availableAnimals;
     }
 
+    /**
+     * Checks whether an animal is trained and unreserved.
+     */
     private boolean isAvailableForService(RescueAnimal animal) {
         return animal.getTrainingStatus().equalsIgnoreCase(
                         "in service")
                 && !animal.isReserved();
     }
 
+    /**
+     * Checks whether a filter should include every value.
+     */
+    private boolean isAllOption(String value) {
+        return value == null
+                || value.trim().isEmpty()
+                || value.trim().equalsIgnoreCase("all");
+    }
 
+    /**
+     * Determines whether a name contains usable text.
+     */
+    private boolean isValidName(String name) {
+        return name != null && !name.trim().isEmpty();
+    }
 
+    /**
+     * Creates a consistent key for case-insensitive name searches.
+     */
+    private String normalizeName(String name) {
+        return name.trim().toLowerCase(Locale.ROOT);
+    }
 }
