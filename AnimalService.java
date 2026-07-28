@@ -103,7 +103,6 @@ public class AnimalService {
 
         List<RescueAnimal> results = new ArrayList<>();
 
-        // Search both animal collections.
         addMatchingAnimals(
                 results,
                 dogList,
@@ -118,7 +117,7 @@ public class AnimalService {
                 trainingStatus,
                 serviceCountry);
 
-        // Sort the copied result list without changing stored list order.
+        // Sort the copied results without changing stored list order.
         sortAnimals(results, sortBy);
 
         return results;
@@ -177,7 +176,8 @@ public class AnimalService {
      * Sorts animals using the selected field.
      */
     private void sortAnimals(
-            List<RescueAnimal> animals, String sortBy) {
+            List<RescueAnimal> animals,
+            String sortBy) {
 
         if (sortBy == null) {
             return;
@@ -204,69 +204,91 @@ public class AnimalService {
                 break;
 
             default:
-                // Keep the original insertion order for invalid options.
+                // Keep insertion order for an invalid sort option.
                 break;
         }
     }
 
     /**
-     * Reserves the first matching animal that is in service and available.
+     * Finds the first matching animal that is in service and available.
      *
-     * @return true if an animal was reserved; otherwise, false
+     * @return the matching animal, or null if none is available
      */
-    public boolean reserveFirstAvailable(
-            String animalType, String country) {
+    public RescueAnimal findFirstAvailable(
+            String animalType,
+            String country) {
 
         if (animalType == null
                 || country == null
                 || country.trim().isEmpty()) {
-            return false;
+            return null;
         }
 
         if (animalType.equalsIgnoreCase("dog")) {
-            return reserveDog(country);
+            return findAvailableDog(country);
         }
 
         if (animalType.equalsIgnoreCase("monkey")) {
-            return reserveMonkey(country);
+            return findAvailableMonkey(country);
         }
 
-        return false;
+        return null;
     }
 
     /**
-     * Searches for and reserves the first available dog.
+     * Finds the first available dog in the requested country.
      */
-    private boolean reserveDog(String country) {
+    private Dog findAvailableDog(String country) {
         for (Dog dog : dogList) {
             if (isAvailableInCountry(dog, country)) {
-                dog.setReserved(true);
-                return true;
+                return dog;
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
-     * Searches for and reserves the first available monkey.
+     * Finds the first available monkey in the requested country.
      */
-    private boolean reserveMonkey(String country) {
+    private Monkey findAvailableMonkey(String country) {
         for (Monkey monkey : monkeyList) {
             if (isAvailableInCountry(monkey, country)) {
-                monkey.setReserved(true);
-                return true;
+                return monkey;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Reserves the first matching animal.
+     *
+     * This method is retained for compatibility with existing tests.
+     *
+     * @return true if an animal was reserved; otherwise, false
+     */
+    public boolean reserveFirstAvailable(
+            String animalType,
+            String country) {
+
+        RescueAnimal animal =
+                findFirstAvailable(animalType, country);
+
+        if (animal == null) {
+            return false;
+        }
+
+        animal.setReserved(true);
+        return true;
     }
 
     /**
      * Applies the shared reservation requirements.
      */
     private boolean isAvailableInCountry(
-            RescueAnimal animal, String country) {
+            RescueAnimal animal,
+            String country) {
 
         return animal.getInServiceCountry().equalsIgnoreCase(
                         country.trim())

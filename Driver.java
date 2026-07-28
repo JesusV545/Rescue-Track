@@ -1,3 +1,4 @@
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -6,12 +7,18 @@ import java.util.Scanner;
  * Provides the console interface for the Rescue-Track application.
  *
  * Animal storage and business rules are handled by AnimalService,
- * while InputValidator handles user-input validation.
+ * while AnimalRepository provides persistent SQLite storage.
  */
 public class Driver {
 
     private static final AnimalService ANIMAL_SERVICE =
             new AnimalService();
+
+    private static final DatabaseManager DATABASE_MANAGER =
+            new DatabaseManager();
+
+    private static final AnimalRepository ANIMAL_REPOSITORY =
+            new AnimalRepository(DATABASE_MANAGER);
 
     private static final String[] ANIMAL_TYPES = {
         "dog",
@@ -71,13 +78,18 @@ public class Driver {
      * Starts the Rescue-Track application.
      */
     public static void main(String[] args) {
-        initializeAnimalData();
+        if (!initializeApplicationData()) {
+            System.out.println(
+                    "Rescue-Track could not access its database.");
+            return;
+        }
 
         try (Scanner scanner = new Scanner(System.in)) {
             boolean running = true;
 
             while (running) {
                 displayMenu();
+
                 String choice =
                         scanner.nextLine().trim().toLowerCase();
 
@@ -99,12 +111,14 @@ public class Driver {
                         break;
 
                     case "5":
-                        printAnimals(ANIMAL_SERVICE.getMonkeys());
+                        printAnimals(
+                                ANIMAL_SERVICE.getMonkeys());
                         break;
 
                     case "6":
                         printAnimals(
-                                ANIMAL_SERVICE.getAvailableAnimals());
+                                ANIMAL_SERVICE
+                                        .getAvailableAnimals());
                         break;
 
                     case "7":
@@ -117,7 +131,8 @@ public class Driver {
 
                     case "q":
                         running = false;
-                        System.out.println("Exiting Rescue-Track.");
+                        System.out.println(
+                                "Exiting Rescue-Track.");
                         break;
 
                     default:
@@ -148,7 +163,7 @@ public class Driver {
     }
 
     /**
-     * Collects validated information and adds a new dog.
+     * Collects validated information and saves a new dog.
      */
     private static void intakeNewDog(Scanner scanner) {
         String name = InputValidator.readRequiredText(
@@ -204,13 +219,16 @@ public class Driver {
                     false,
                     inServiceCountry);
 
+            // Save first so memory is updated only if SQLite succeeds.
+            ANIMAL_REPOSITORY.saveAnimal(newDog);
+
             if (ANIMAL_SERVICE.addDog(newDog)) {
                 System.out.println("Dog added successfully.");
             } else {
                 System.out.println(
                         "The dog could not be added.");
             }
-        } catch (IllegalArgumentException exception) {
+        } catch (SQLException | IllegalArgumentException exception) {
             System.out.println(
                     "Dog intake failed: "
                             + exception.getMessage());
@@ -218,7 +236,7 @@ public class Driver {
     }
 
     /**
-     * Collects validated information and adds a new monkey.
+     * Collects validated information and saves a new monkey.
      */
     private static void intakeNewMonkey(Scanner scanner) {
         String name = InputValidator.readRequiredText(
@@ -290,6 +308,9 @@ public class Driver {
                     bodyLength,
                     species);
 
+            // Save first so memory is updated only if SQLite succeeds.
+            ANIMAL_REPOSITORY.saveAnimal(newMonkey);
+
             if (ANIMAL_SERVICE.addMonkey(newMonkey)) {
                 System.out.println(
                         "Monkey added successfully.");
@@ -297,7 +318,7 @@ public class Driver {
                 System.out.println(
                         "The monkey could not be added.");
             }
-        } catch (IllegalArgumentException exception) {
+        } catch (SQLException | IllegalArgumentException exception) {
             System.out.println(
                     "Monkey intake failed: "
                             + exception.getMessage());
@@ -316,16 +337,35 @@ public class Driver {
         String country = InputValidator.readRequiredText(
                 scanner, "In-service country: ");
 
-        boolean reserved =
-                ANIMAL_SERVICE.reserveFirstAvailable(
+        RescueAnimal animal =
+                ANIMAL_SERVICE.findFirstAvailable(
                         animalType, country);
 
-        if (reserved) {
-            System.out.println(
-                    "Animal reserved successfully.");
-        } else {
+        if (animal == null) {
             System.out.println(
                     "No matching in-service animal is available.");
+            return;
+        }
+
+        try {
+            boolean updated =
+                    ANIMAL_REPOSITORY.updateReservation(
+                            animal.getName(), true);
+
+            if (updated) {
+                animal.setReserved(true);
+
+                System.out.println(
+                        "Animal reserved successfully.");
+            } else {
+                System.out.println(
+                        "The animal record was not found "
+                                + "in the database.");
+            }
+        } catch (SQLException exception) {
+            System.out.println(
+                    "Reservation failed: "
+                            + exception.getMessage());
         }
     }
 
@@ -350,9 +390,11 @@ public class Driver {
     }
 
     /**
-     * Collects filtering and sorting choices and displays the results.
+     * Collects filtering and sorting choices and displays results.
      */
-    private static void searchAndSortAnimals(Scanner scanner) {
+    private static void searchAndSortAnimals(
+            Scanner scanner) {
+
         String animalType = InputValidator.readOption(
                 scanner,
                 "Animal type (all/dog/monkey): ",
@@ -426,10 +468,70 @@ public class Driver {
     }
 
     /**
-     * Adds sample records for application testing.
+     * Initializes the database and loads persistent records.
+     *
+     * Sample animals are inserted only when the database is empty.
+     *
+     * @return true if initialization succeeds
      */
-    private static void initializeAnimalData() {
-        ANIMAL_SERVICE.addDog(
+    private static boolean initializeApplicationData() {
+        try {
+            DATABASE_MANAGER.initializeDatabase();
+
+            List<RescueAnimal> savedAnimals =
+                    ANIMAL_REPOSITORY.getAllAnimals();
+
+            if (savedAnimals.isEmpty()) {
+                addInitialAnimalData();
+            } else {
+                for (RescueAnimal animal : savedAnimals) {
+                    addAnimalToService(animal);
+                }
+            }
+
+            System.out.println(
+                    "Animal records loaded from the database.");
+            return true;
+        } catch (SQLException | IllegalArgumentException exception) {
+            System.out.println(
+                    "Database initialization failed: "
+                            + exception.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Adds a database animal to the correct in-memory collection.
+     */
+    private static void addAnimalToService(
+            RescueAnimal animal) {
+
+        boolean added;
+
+        if (animal instanceof Dog) {
+            added = ANIMAL_SERVICE.addDog((Dog) animal);
+        } else if (animal instanceof Monkey) {
+            added = ANIMAL_SERVICE.addMonkey(
+                    (Monkey) animal);
+        } else {
+            throw new IllegalArgumentException(
+                    "Unsupported animal type.");
+        }
+
+        if (!added) {
+            throw new IllegalArgumentException(
+                    "Duplicate or invalid animal record: "
+                            + animal.getName());
+        }
+    }
+
+    /**
+     * Creates and saves the original sample records.
+     */
+    private static void addInitialAnimalData()
+            throws SQLException {
+
+        saveInitialAnimal(
                 new Dog(
                         "Spot",
                         "German Shepherd",
@@ -442,7 +544,7 @@ public class Driver {
                         false,
                         "United States"));
 
-        ANIMAL_SERVICE.addDog(
+        saveInitialAnimal(
                 new Dog(
                         "Rex",
                         "Great Dane",
@@ -455,7 +557,7 @@ public class Driver {
                         false,
                         "United States"));
 
-        ANIMAL_SERVICE.addDog(
+        saveInitialAnimal(
                 new Dog(
                         "Bella",
                         "Chihuahua",
@@ -468,7 +570,7 @@ public class Driver {
                         true,
                         "Canada"));
 
-        ANIMAL_SERVICE.addMonkey(
+        saveInitialAnimal(
                 new Monkey(
                         "Caesar",
                         "male",
@@ -483,5 +585,15 @@ public class Driver {
                         40.0,
                         60.0,
                         "Guenon"));
+    }
+
+    /**
+     * Saves one initial animal and adds it to memory.
+     */
+    private static void saveInitialAnimal(
+            RescueAnimal animal) throws SQLException {
+
+        ANIMAL_REPOSITORY.saveAnimal(animal);
+        addAnimalToService(animal);
     }
 }
