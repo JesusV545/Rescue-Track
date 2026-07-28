@@ -31,7 +31,7 @@ public class DatabaseManager {
         String createTableSql =
                 "CREATE TABLE IF NOT EXISTS animal_records ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "name TEXT NOT NULL, "
+                + "name TEXT NOT NULL UNIQUE COLLATE NOCASE, "
                 + "animal_type TEXT NOT NULL "
                 + "CHECK (animal_type IN ('Dog', 'Monkey')), "
                 + "gender TEXT NOT NULL, "
