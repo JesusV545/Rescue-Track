@@ -1,101 +1,180 @@
 # Rescue-Track
 
-## Project Overview
+Rescue-Track is a Java-based animal rescue management application developed to manage dogs and monkeys trained for rescue service. The program allows users to intake animals, reserve available animals, display animal records, search and filter records, and preserve information between sessions using an SQLite database.
 
-Rescue-Track is a Java-based console application for managing dogs and monkeys that are being trained for rescue service. The application allows users to intake animals, reserve an available animal, and display animal records.
+This repository contains the enhanced version of an artifact originally created for the SNHU CS 210 course and later improved for the CS 499 Computer Science Capstone. The enhancements demonstrate skills in software design and engineering, algorithms and data structures, database development, input validation, and secure coding practices.
 
-The original version was completed on March 16, 2025. This enhanced version was developed for the CS 499 Software Design and Engineering milestone.
+## Features
 
-## Application Features
+* Intake new dogs and monkeys
+* Validate user input before processing or storing information
+* Prevent duplicate animal records
+* Reserve eligible animals by type and service country
+* Find animals by name
+* Filter animals by type, training status, reservation status, or service country
+* Sort search results by name, age, or training status
+* Store animal records in an SQLite database
+* Load saved records when the application starts
+* Preserve reservation changes between program sessions
+* Display dogs, monkeys, or all available animals
+* Handle invalid input and database errors without unexpectedly terminating
 
-- Intake new dogs and monkeys
-- Prevent duplicate animal names
-- Validate monkey species
-- Validate gender and training status
-- Validate ages, weights, physical measurements, and dates
-- Reserve available in-service animals
-- Display dogs, monkeys, or all available animals
-- Recover safely from incorrect console input
+## Capstone Enhancements
 
-## Enhanced Architecture
+### Software Design and Engineering
 
-### `Driver.java`
+The original application placed most of its responsibilities inside the `Driver` class. The enhanced version separates those responsibilities into specialized components:
 
-Provides the console interface and controls menu navigation. It delegates validation and animal-management responsibilities to separate classes.
+* `AnimalService` manages animal intake, searches, filtering, sorting, and reservations.
+* `InputValidator` provides reusable validation methods.
+* `RescueAnimal` defines shared animal data and behavior.
+* `Dog` and `Monkey` provide animal-specific fields and validation.
+* `Driver` manages the menu and user interaction.
 
-### `AnimalService.java`
+This separation improves readability, maintainability, reuse, and testability. Defensive exception handling and stronger validation also reduce the likelihood of invalid data or unexpected program failures.
 
-Manages the dog and monkey collections. It also handles duplicate detection, availability checks, and reservation rules.
+### Algorithms and Data Structures
 
-### `InputValidator.java`
+The application now supports more efficient animal management and record retrieval. A `HashMap` provides direct name-based lookup, while collection-processing algorithms support filtering and sorting.
 
-Provides reusable validation methods for required text, integers, decimal numbers, dates, and controlled options.
+Users can:
 
-### `RescueAnimal.java`
+* Search for an animal by name
+* Filter records using multiple criteria
+* Sort records by name, age, or training status
+* View organized search results
 
-Defines the shared fields and behavior for rescue animals. Its constructor validates shared information and prevents invalid model states.
+These enhancements make the application more useful as the number of animal records increases.
 
-### `Dog.java`
+### Database Integration
 
-Extends `RescueAnimal` and adds breed information.
+The final enhancement replaces session-only storage with SQLite persistence. The database layer is divided into two primary classes:
 
-### `Monkey.java`
+* `DatabaseManager` creates and manages the SQLite connection and database table.
+* `AnimalRepository` performs database operations for animal records.
 
-Extends `RescueAnimal` and adds species and physical measurement information.
+The application can save and retrieve both dog and monkey records, update reservation information, and restore saved data when restarted. Prepared statements are used for database operations, helping separate SQL commands from user-provided values.
 
-## Software Design Improvements
+## Technologies
 
-The enhanced version includes the following improvements:
+* Java
+* Object-oriented programming
+* Java Collections Framework
+* SQLite
+* JDBC
+* SQL
+* Git and GitHub
+* Visual Studio Code
 
-- Separation of user-interface and business-logic responsibilities
-- Reusable input-validation methods
-- Appropriate data types for ages, weights, measurements, and dates
-- Constructor-level model validation
-- Defensive exception handling
-- Read-only access to stored collections
-- Reduced duplicate logic
-- Improved naming, comments, and documentation
+## Project Structure
 
-These changes make the application more maintainable, reliable, secure, and easier to extend.
+```text
+Rescue-Track/
+├── AnimalRepository.java
+├── AnimalRepositoryTest.java
+├── AnimalService.java
+├── DatabaseConnectionTest.java
+├── DatabaseManager.java
+├── Dog.java
+├── Driver.java
+├── InputValidator.java
+├── Monkey.java
+├── RescueAnimal.java
+├── code-review/
+│   └── milestone-one-outline.md
+├── lib/
+│   └── sqlite-jdbc-3.53.2.1.jar
+├── .gitignore
+└── README.md
+```
 
 ## Requirements
 
-- Java 8 or newer
-- A terminal, command prompt, or Java-compatible IDE
+To compile and run the application, you need:
+
+* Java Development Kit (JDK) 8 or later
+* The included SQLite JDBC driver
+* A terminal opened in the repository’s root directory
 
 ## Compile and Run
 
-From the project directory, run:
+### Windows
+
+From Git Bash, PowerShell, or Command Prompt, compile the application using:
 
 ```bash
-javac *.java
-java Driver
+javac -cp ".;lib/sqlite-jdbc-3.53.2.1.jar" *.java
 ```
 
-## Menu Options
+Run the application using:
 
-```text
-[1] Intake a new dog
-[2] Intake a new monkey
-[3] Reserve an animal
-[4] Display all dogs
-[5] Display all monkeys
-[6] Display available in-service animals
-[q] Quit
+```bash
+java -cp ".;lib/sqlite-jdbc-3.53.2.1.jar" Driver
 ```
 
-## Input Requirements
+### macOS or Linux
 
-- Dates must use the `YYYY-MM-DD` format.
-- Ages must be whole numbers that are zero or greater.
-- Weights and measurements must be greater than zero.
-- Monkey species must be one of the supported species shown by the application.
-- Gender and training status must match one of the displayed options.
+Compile the application using:
 
-## Course Outcome Alignment
+```bash
+javac -cp ".:lib/sqlite-jdbc-3.53.2.1.jar" *.java
+```
 
-This enhancement supports the following CS 499 outcomes:
+Run the application using:
 
-- **Outcome Two:** Professional-quality technical communication through organized code, comments, and documentation.
-- **Outcome Four:** Application of software engineering techniques and tools to create a maintainable solution.
-- **Outcome Five:** Defensive programming, input validation, and prevention of invalid application states.
+```bash
+java -cp ".:lib/sqlite-jdbc-3.53.2.1.jar" Driver
+```
+
+The program creates or connects to its SQLite database when it starts. Animal records added through the application remain available during later sessions.
+
+## Testing
+
+The repository includes test programs for the database connection and repository operations.
+
+On Windows:
+
+```bash
+java -cp ".;lib/sqlite-jdbc-3.53.2.1.jar" DatabaseConnectionTest
+java -cp ".;lib/sqlite-jdbc-3.53.2.1.jar" AnimalRepositoryTest
+```
+
+On macOS or Linux, replace the semicolon in the classpath with a colon.
+
+## Secure Development Practices
+
+The enhanced application incorporates several secure-development practices:
+
+* Centralized validation of menu selections and animal data
+* Duplicate-record prevention
+* Defensive exception handling
+* Prepared SQL statements
+* Restricted valid values for fields such as gender and training status
+* Separation of user-interface, business-logic, and database responsibilities
+* Encapsulation of animal data through private fields and controlled methods
+
+These practices improve data integrity, reliability, and maintainability.
+
+## CS 499 Course Outcomes
+
+This artifact demonstrates the ability to:
+
+1. Apply collaborative and professional software-development practices through source control, documentation, and organized project enhancements.
+2. Communicate technical ideas through code documentation, an ePortfolio, enhancement narratives, and a recorded code review.
+3. Design and evaluate computing solutions using object-oriented design, reusable services, collections, searching, filtering, and sorting.
+4. Apply established computer science practices using Java, algorithms, data structures, SQL, JDBC, and database persistence.
+5. Develop a security-focused mindset through input validation, prepared statements, exception handling, encapsulation, and data-integrity controls.
+
+## Project Background
+
+The original Rescue-Track project was created as a console application for managing rescue animals. Its initial version relied on in-memory lists, included limited validation, and concentrated most application logic in one class.
+
+For the CS 499 Capstone, the artifact was progressively enhanced in three areas:
+
+1. Software design and engineering
+2. Algorithms and data structures
+3. Databases
+
+Together, these enhancements transformed the original classroom project into a more organized, persistent, secure, and functional application.
+
+
